@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>MATH MAYHEM — Chromebook Mode</title>
+    <meta name="description"
+        content="Chromebook student mode for MATH MAYHEM. Play individually or in teams on any browser.">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ─── LOGIN ─── */
+        #screen-login {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            gap: 24px;
+        }
+
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: var(--shadow), 0 0 60px rgba(6, 182, 212, 0.1);
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .av-btn {
+            font-size: 1.8rem;
+            background: var(--surface2);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .av-btn:hover,
+        .av-btn.selected {
+            border-color: var(--cyan);
+            background: rgba(6, 182, 212, 0.12);
+            transform: scale(1.15);
+        }
+
+        /* ─── GAME ─── */
+        #screen-game {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .cb-topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .cb-player-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+
+        .cb-main {
+            flex: 1;
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .cb-play-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 16px;
+            overflow-y: auto;
+        }
+
+        .cb-sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto;
+        }
+
+        @media(max-width:760px) {
+            .cb-sidebar {
+                display: none;
+            }
+        }
+
+        /* Timer ring */
+        .timer-ring-svg {
+            transform: rotate(-90deg);
+        }
+
+        .timer-center {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Question card */
+        .cb-q-card {
+            background: var(--surface);
+            border: 2px solid var(--cyan);
+            border-radius: var(--radius-lg);
+            padding: 28px 32px;
+            box-shadow: var(--glow-cyan);
+            text-align: center;
+        }
+
+        .cb-q-text {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        /* Answers */
+        .cb-answers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media(max-width:500px) {
+            .cb-answers {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Power-up bar */
+        .pu-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 8px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        /* ─── LEADERBOARD OVERLAY ─── */
+        #lb-overlay {
+            display: none;
+        }
+
+        #lb-overlay .modal {
+            max-width: 440px;
+        }
+
+        /* ─── END ─── */
+        #screen-end {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            gap: 24px;
+        }
+
+        .end-big {
+            font-family: 'Bangers', cursive;
+            font-size: clamp(2.5rem, 8vw, 5.5rem);
+            letter-spacing: 3px;
+            text-align: center;
+        }
+
+        /* Badge notification */
+        .badge-notif {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 6000;
+            background: var(--surface2);
+            border: 2px solid var(--gold);
+            border-radius: var(--radius-lg);
+            padding: 16px 28px;
+            text-align: center;
+            box-shadow: var(--glow-gold);
+            animation: badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .badge-notif .b-icon {
+            font-size: 2.5rem;
+        }
+
+        .badge-notif .b-name {
+            font-family: 'Bangers', cursive;
+            font-size: 1.4rem;
+            color: var(--gold);
+            letter-spacing: 1px;
+        }
+
+        .badge-notif .b-desc {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        /* Points popup */
+        .pts-popup {
+            position: fixed;
+            pointer-events: none;
+            z-index: 5500;
+            font-family: 'Bangers', cursive;
+            font-size: 2rem;
+            color: var(--gold);
+            text-shadow: var(--glow-gold);
+            animation: ptsFloat 1.2s ease forwards;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes ptsFloat {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -150%);
+            }
+        }
+
+        /* ─── INSTRUCTION MODAL ─── */
+        .instr-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9000;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .instr-modal.open {
+            display: flex;
+        }
+
+        .instr-box {
+            background: var(--surface);
+            border: 2px solid var(--cyan);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--glow-cyan), var(--shadow);
+            padding: 32px 36px;
+            max-width: 580px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        .instr-title {
+            font-family: 'Bangers', cursive;
+            font-size: 2rem;
+            letter-spacing: 3px;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .instr-subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin-bottom: 24px;
+        }
+
+        .instr-step {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .instr-step:last-child {
+            border-bottom: none;
+        }
+
+        .instr-step .step-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            width: 36px;
+            text-align: center;
+        }
+
+        .instr-step .step-body strong {
+            display: block;
+            font-size: 0.95rem;
+            color: var(--white);
+            margin-bottom: 3px;
+        }
+
+        .instr-step .step-body p {
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        .instr-h3 {
+            font-family: 'Bangers', cursive;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            color: var(--cyan);
+            margin: 20px 0 10px;
+        }
+
+        .pu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .pu-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            font-size: 0.83rem;
+        }
+
+        .pu-card .pu-name {
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 3px;
+        }
+
+        .pu-card .pu-desc {
+            color: var(--muted);
+        }
+
+        .hint-box {
+            background: rgba(168, 85, 247, 0.1);
+            border-left: 3px solid var(--purple);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: var(--purple-glow);
+            margin-top: 14px;
+        }
+
+        .help-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .help-btn:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="stars-bg" id="stars"></div>
+
+    <!-- ═══════════════════════════════════════════════════
+     SCREEN 1: LOGIN
+════════════════════════════════════════════════════ -->
+    <section id="screen-login">
+        <div style="text-align:center;">
+            <div style="font-family:'Bangers',cursive;font-size:clamp(2.5rem,7vw,5rem);letter-spacing:3px;"
+                class="glow-cyan">⚡ MATH MAYHEM</div>
+            <div style="font-family:'Bangers',cursive;font-size:1.1rem;color:var(--muted);letter-spacing:4px;">
+                CHROMEBOOK MODE</div>
+        </div>
+
+        <div class="login-card">
+            <div
+                style="font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;margin-bottom:20px;color:var(--cyan);">
+                PLAYER SETUP</div>
+
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <div>
+                    <label class="label">🎮 Your Name</label>
+                    <input class="input-field" id="player-name" placeholder="Enter your name..." maxlength="20">
+                </div>
+
+                <div>
+                    <label class="label">🎭 Pick Your Avatar</label>
+                    <div class="avatar-grid" id="avatar-grid"></div>
+                </div>
+
+                <div>
+                    <label class="label">📚 Math Topic</label>
+                    <select class="select-field" id="cb-topic">
+                        <option value="all">🌀 All Topics (Mixed)</option>
+                        <option value="addition">➕ Addition &amp; Subtraction</option>
+                        <option value="multiplication">✖️ Multiplication &amp; Division</option>
+                        <option value="fractions">🍕 Fractions</option>
+                        <option value="decimals">💧 Decimals</option>
+                        <option value="algebra">🔢 Algebra</option>
+                        <option value="geometry">📐 Geometry</option>
+                        <option value="word_problems">📖 Word Problems</option>
+                    </select>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <label class="label">⭐ Level</label>
+                        <select class="select-field" id="cb-level">
+                            <option value="1">⭐ Rookie</option>
+                            <option value="2" selected>⭐⭐ Challenger</option>
+                            <option value="3">⭐⭐⭐ Elite</option>
+                            <option value="4">💥 MAYHEM</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="label">❓ Questions</label>
+                        <select class="select-field" id="cb-qcount">
+                            <option value="5">5 Quick</option>
+                            <option value="10" selected>10 Standard</option>
+                            <option value="15">15 Extended</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-cyan btn-lg w-full" id="btn-cb-start" onclick="startCBGame()"
+                    style="margin-top:8px;">
+                    🚀 Start Playing!
+                </button>
+                <button class="btn btn-ghost w-full" style="padding:10px;"
+                    onclick="document.getElementById('cb-instr-modal').classList.add('open')">
+                    ❓ How to Play
+                </button>
+                <a href="index.html" style="display:block;text-align:center;font-size:0.85rem;color:var(--muted);">←
+                    Back to Mode Select</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+     SCREEN 2: GAME
+════════════════════════════════════════════════════ -->
+    <section id="screen-game">
+        <!-- Top bar -->
+        <div class="cb-topbar">
+            <div class="cb-player-chip">
+                <span id="cb-avatar" style="font-size:1.6rem;">🧑</span>
+                <span id="cb-pname" style="font-size:1rem;">Player</span>
+            </div>
+            <div class="score-badge">
+                ⭐ <span id="cb-score">0</span> pts
+            </div>
+            <div class="streak-flame" id="cb-streak-display"></div>
+            <div style="flex:1;"></div>
+            <div style="font-size:0.85rem;color:var(--muted);" id="cb-qnum">Q 1/10</div>
+            <button class="help-btn" title="How to Play"
+                onclick="document.getElementById('cb-instr-modal').classList.add('open')">?</button>
+            <div class="xp-bar-wrap" style="width:140px;">
+                <div class="xp-bar-label">
+                    <span id="cb-level-label">Lv 1</span>
+                    <span id="cb-xp-label">0 XP</span>
+                </div>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="cb-xp-fill" style="width:0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <div class="cb-main">
+            <div class="cb-play-area">
+                <!-- Timer + question -->
+                <div style="display:flex;align-items:flex-start;gap:16px;">
+                    <!-- Timer ring -->
+                    <div class="timer-ring-wrap" style="width:90px;height:90px;flex-shrink:0;">
+                        <svg class="timer-ring-svg" width="90" height="90">
+                            <circle class="timer-bg" cx="45" cy="45" r="38" />
+                            <circle class="timer-bar" id="cb-timer-circle" cx="45" cy="45" r="38" stroke-dasharray="239"
+                                stroke-dashoffset="0" />
+                        </svg>
+                        <div class="timer-center">
+                            <div id="cb-timer-num" class="timer-label" style="font-size:1.8rem;">20</div>
+                        </div>
+                    </div>
+                    <!-- Question card -->
+                    <div class="cb-q-card" style="flex:1;">
+                        <div id="cb-q-text" class="cb-q-text">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Active power-up indicator -->
+                <div id="cb-active-pu-bar"
+                    style="display:none;text-align:center;padding:10px;border-radius:var(--radius);border:2px solid var(--gold);background:rgba(251,191,36,0.08);color:var(--gold);font-weight:700;">
+                    ✨ <span id="cb-active-pu-label">Power-up active!</span>
+                </div>
+
+                <!-- Answer buttons -->
+                <div class="cb-answers" id="cb-answers"></div>
+
+                <!-- Power-up bar -->
+                <div class="pu-bar" id="cb-pu-bar"></div>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="cb-sidebar">
+                <div style="font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:2px;color:var(--muted);">
+                    LEADERBOARD</div>
+                <div id="cb-lb-sidebar" class="scroll-list" style="max-height:none;"></div>
+                <hr class="neon-divider" style="margin:4px 0;">
+                <div style="font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:2px;color:var(--muted);">YOUR
+                    BADGES</div>
+                <div id="cb-badges-sidebar" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+            </aside>
+        </div>
+    </section>
+
+    <!-- ─── Leaderboard Overlay (mid-game) ─── -->
+    <div class="overlay" id="lb-overlay" style="display:none;">
+        <div class="modal text-center" style="max-width:440px;">
+            <div
+                style="font-family:'Bangers',cursive;font-size:2rem;letter-spacing:2px;color:var(--gold);margin-bottom:16px;">
+                🏆 LEADERBOARD</div>
+            <div id="lb-overlay-list" class="scroll-list" style="max-height:50vh;"></div>
+            <button class="btn btn-cyan btn-lg w-full mt-4" onclick="closeLB()">Continue Playing →</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+     SCREEN 3: END
+════════════════════════════════════════════════════ -->
+    <section id="screen-end">
+        <div class="end-big" id="end-headline">🎉 GAME COMPLETE!</div>
+        <div id="end-podium" class="podium-wrap"></div>
+        <div class="card text-center" style="max-width:480px;width:100%;">
+            <div id="end-player-summary"></div>
+        </div>
+        <div id="end-badges" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:600px;"></div>
+        <div id="end-all-lb" class="scroll-list" style="width:100%;max-width:500px;"></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+            <button class="btn btn-cyan btn-lg" onclick="location.href='chromebook.html'">🔄 Play Again</button>
+            <button class="btn btn-ghost btn-lg" onclick="location.href='index.html'">🏠 Home</button>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+     STUDENT INSTRUCTIONS MODAL
+════════════════════════════════════════════════════ -->
+    <div class="instr-modal open" id="cb-instr-modal">
+        <div class="instr-box">
+            <div class="instr-title">⚡ HOW TO PLAY</div>
+            <div class="instr-subtitle">MATH MAYHEM — Chromebook Mode</div>
+
+            <!-- Steps -->
+            <div class="instr-step">
+                <div class="step-icon">🎮</div>
+                <div class="step-body">
+                    <strong>Choose your setup</strong>
+                    <p>Enter your name, pick a cool avatar, then choose a topic and difficulty level. Hit 🚀 Start
+                        Playing!</p>
+                </div>
+            </div>
+            <div class="instr-step">
+                <div class="step-icon">❓</div>
+                <div class="step-body">
+                    <strong>Read the question</strong>
+                    <p>A math question appears on your screen. You'll have <strong style="color:var(--cyan);">20
+                            seconds</strong> to answer — watch the timer ring!</p>
+                </div>
+            </div>
+            <div class="instr-step">
+                <div class="step-icon">🖱️</div>
+                <div class="step-body">
+                    <strong>Tap your answer (A / B / C / D)</strong>
+                    <p>✅ <strong style="color:var(--green);">Correct</strong> = green glow + points! &nbsp; ❌ <strong
+                            style="color:var(--red);">Wrong</strong> = red shake, correct answer shown.</p>
+                </div>
+            </div>
+            <div class="instr-step">
+                <div class="step-icon">🔥</div>
+                <div class="step-body">
+                    <strong>Build a streak for bonus points!</strong>
+                    <p>Answer 3 in a row → <strong style="color:var(--gold);">×1.5 multiplier</strong>. Answer 5 in a
+                        row → <strong style="color:var(--gold);">×2.0 multiplier</strong>. Don't break the chain!</p>
+                </div>
+            </div>
+            <div class="instr-step">
+                <div class="step-icon">⭐</div>
+                <div class="step-body">
+                    <strong>Earn XP and level up</strong>
+                    <p>Every correct answer earns XP. Fill the XP bar to level up — watch the bar at the top of your
+                        screen.</p>
+                </div>
+            </div>
+
+            <!-- Power-ups -->
+            <div class="instr-h3">⚡ POWER-UPS</div>
+            <p style="color:var(--muted);font-size:0.85rem;margin-bottom:10px;">You start with one of each. Tap them
+                <em>before</em> you answer to activate!</p>
+            <div class="pu-grid">
+                <div class="pu-card">
+                    <div class="pu-name">🛡️ Shield</div>
+                    <div class="pu-desc">Makes a wrong answer count as zero — safe miss!</div>
+                </div>
+                <div class="pu-card">
+                    <div class="pu-name">⚡ Double Points</div>
+                    <div class="pu-desc">Your next correct answer is worth 2× points.</div>
+                </div>
+                <div class="pu-card">
+                    <div class="pu-name">❄️ Freeze</div>
+                    <div class="pu-desc">Stops the countdown timer for 5 seconds.</div>
+                </div>
+                <div class="pu-card">
+                    <div class="pu-name">💣 Bomb</div>
+                    <div class="pu-desc">Blows up 2 wrong answers — only 2 choices left!</div>
+                </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="instr-h3">🎖️ BADGES</div>
+            <p style="color:var(--muted);font-size:0.85rem;">Earn badges during the game for special achievements:</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+                <span class="pill" style="border-color:var(--gold);color:var(--gold);">🔥 On Fire — 5 streak</span>
+                <span class="pill" style="border-color:var(--cyan);color:var(--cyan);">⚡ Speed Demon — answer in
+                    &lt;3s</span>
+                <span class="pill" style="border-color:var(--green);color:var(--green);">🌟 Perfect Round — all
+                    correct</span>
+                <span class="pill" style="border-color:var(--purple);color:var(--purple);">👑 Champion — finish in 1st
+                    place</span>
+            </div>
+
+            <div class="hint-box">💡 <strong>Pro tip:</strong> Use Bomb + Double Points together for massive points on a
+                tricky question!</div>
+
+            <div style="text-align:center;margin-top:24px;">
+                <button class="btn btn-cyan btn-lg"
+                    onclick="document.getElementById('cb-instr-modal').classList.remove('open')">
+                    Let's Go! 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/questions.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/sounds.js"></script>
+    <script src="js/confetti.js"></script>
+    <script src="js/chromebook.js"></script>
+    <script>
+        // Stars
+        const starsBg = document.getElementById('stars');
+        for (let i = 0; i < 80; i++) {
+            const s = document.createElement('div'); s.className = 'star-dot';
+            const sz = Math.random() * 2 + 0.5;
+            Object.assign(s.style, { width: sz + 'px', height: sz + 'px', left: Math.random() * 100 + '%', top: Math.random() * 100 + '%', animationDelay: Math.random() * 3 + 's', animationDuration: (2 + Math.random() * 3) + 's' });
+            starsBg.appendChild(s);
+        }
+        initLogin();
+    </script>
+</body>
+
+</html>
