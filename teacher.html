@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Teacher Dashboard — MATH MAYHEM</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 800px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            z-index: 10;
+        }
+
+        .header-title {
+            font-family: 'Bangers', cursive;
+            font-size: 3rem;
+            color: var(--gold);
+            letter-spacing: 2px;
+            text-shadow: var(--glow-gold);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--white);
+            margin: 24px 0 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .q-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--cyan);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .q-details {
+            flex: 1;
+            margin-right: 16px;
+        }
+
+        .q-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .q-meta {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .delete-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="stars-bg" id="stars"></div>
+
+    <div class="dashboard" id="login-section"
+        style="text-align: center; max-width: 400px; margin: auto; margin-top: 10vh;">
+        <div class="header-title" style="font-size: 2.5rem;">🔒 TEACHER LOGIN</div>
+        <p style="color:var(--muted); margin-bottom: 24px;" id="login-prompt">Enter your password to access the
+            dashboard.</p>
+
+        <input type="password" id="teacher-pwd" class="input-field" placeholder="Enter Password"
+            style="margin-bottom: 16px; text-align: center;">
+        <button class="btn btn-cyan w-full" style="padding:16px; font-size:1.1rem;" onclick="attemptLogin()"
+            id="login-btn">Login</button>
+
+        <div style="margin-top:24px;">
+            <a href="index.html" style="font-size:0.85rem;color:var(--muted);">← Back to Home</a>
+        </div>
+    </div>
+
+    <div class="dashboard" id="dashboard-section" style="display:none;">
+        <div class="header-title">👩‍🏫 TEACHER DASHBOARD</div>
+        <div style="text-align:center; margin-bottom:24px;">
+            <a href="index.html" class="btn btn-ghost">← Back to Home</a>
+        </div>
+
+        <div class="section-title">➕ Add New Custom Question</div>
+        <div class="form-row full">
+            <div>
+                <label class="label">Question Text</label>
+                <input type="text" id="q-text" class="input-field"
+                    placeholder="e.g., What is the capital of France? (or a custom Math question)">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label class="label">Topic Group</label>
+                <select id="q-topic" class="select-field">
+                    <option value="addition">Addition & Subtraction</option>
+                    <option value="multiplication">Multiplication & Division</option>
+                    <option value="fractions">Fractions</option>
+                    <option value="decimals">Decimals</option>
+                    <option value="algebra">Algebra</option>
+                    <option value="geometry">Geometry</option>
+                    <option value="word_problems">Word Problems</option>
+                    <option value="custom">Custom Syllabus (Mixed)</option>
+                </select>
+            </div>
+            <div>
+                <label class="label">Difficulty Level</label>
+                <select id="q-level" class="select-field">
+                    <option value="1">⭐ Rookie (Level 1)</option>
+                    <option value="2">⭐⭐ Challenger (Level 2)</option>
+                    <option value="3">⭐⭐⭐ Elite (Level 3)</option>
+                    <option value="4">💥 MAYHEM (Level 4)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label class="label">Correct Answer</label>
+                <input type="text" id="q-ans-correct" class="input-field" placeholder="Correct Answer">
+            </div>
+            <div>
+                <label class="label">Wrong Answer 1</label>
+                <input type="text" id="q-ans-w1" class="input-field" placeholder="Distractor 1">
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label class="label">Wrong Answer 2 (Optional)</label>
+                <input type="text" id="q-ans-w2" class="input-field" placeholder="Distractor 2">
+            </div>
+            <div>
+                <label class="label">Wrong Answer 3 (Optional)</label>
+                <input type="text" id="q-ans-w3" class="input-field" placeholder="Distractor 3">
+            </div>
+        </div>
+
+        <button class="btn btn-cyan w-full" style="padding:16px; font-size:1.1rem;" onclick="addQuestion()">Add Question
+            to Database</button>
+
+        <div class="section-title" style="margin-top:40px;">📚 Your Custom Questions (<span id="q-count">0</span>)</div>
+        <div id="q-list">
+            <!-- Question list goes here -->
+        </div>
+        <div style="text-align: right; margin-top: 16px;">
+            <button class="btn btn-ghost" style="color:var(--red); border-color:var(--red);"
+                onclick="clearAllQuestions()">🗑️ Clear All Custom Data</button>
+        </div>
+    </div>
+
+    <script src="js/teacher.js"></script>
+    <script>
+        // Stars background
+        const starsBg = document.getElementById('stars');
+        for (let i = 0; i < 60; i++) {
+            const s = document.createElement('div'); s.className = 'star-dot';
+            const sz = Math.random() * 2 + 0.5;
+            Object.assign(s.style, { width: sz + 'px', height: sz + 'px', left: Math.random() * 100 + '%', top: Math.random() * 100 + '%', animationDelay: Math.random() * 3 + 's', animationDuration: (2 + Math.random() * 3) + 's' });
+            starsBg.appendChild(s);
+        }
+    </script>
+</body>
+
+</html>
